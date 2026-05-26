@@ -15,18 +15,13 @@ class GitHubAdvisoryProvider(VulnerabilityProviderInterface):
     def get_name(self) -> str:
         return "GitHub Advisory Database"
 
-    def fetch_vulnerabilities(
-        self, dependencies: list[Dependency]
-    ) -> dict[str, list[Vulnerability]]:
+    def fetch_vulnerabilities(self, dependencies: list[Dependency]) -> dict[str, list[Vulnerability]]:
         # Si no hay token de GitHub configurado
         if not self.settings.github_token:
-            logger.info(
-                "GitHub Token no configurado. Omitiendo consultas a GitHub Advisory Database."
-            )
+            logger.info("GitHub Token no configurado. Omitiendo consultas a GitHub Advisory Database.")
             return {}
 
-        logger.info(
-            "GitHub Token configurado. Consultando GitHub Advisory Database...")
+        logger.info("GitHub Token configurado. Consultando GitHub Advisory Database...")
         # Nota: La consulta requiere llamadas GraphQL autenticadas.
         # Implementación extensible:
         # En una versión futura, aquí se realiza el request GraphQL a api.github.com/graphql

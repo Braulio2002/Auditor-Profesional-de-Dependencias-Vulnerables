@@ -3,7 +3,7 @@ from pathlib import Path
 from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.infrastructure.readers.composer_dependency_reader import (
     ComposerDependencyReader,
 )
@@ -43,6 +43,4 @@ class DependencyReaderFactory:
         elif filename == "go.mod":
             return GoDependencyReader()
 
-        raise ReaderException(
-            f"No existe un lector configurado para el archivo: {filename}"
-        )
+        raise ReaderError(f"No existe un lector configurado para el archivo: {filename}")

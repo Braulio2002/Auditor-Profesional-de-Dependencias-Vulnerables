@@ -19,16 +19,14 @@ class ExecutiveSummaryService:
     ) -> dict[str, Any]:
 
         # Conteo de vulnerabilidades por severidad
-        severity_counts = {"CRITICAL": 0, "HIGH": 0,
-                           "MEDIUM": 0, "LOW": 0, "INFO": 0}
+        severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0}
 
         vulnerable_deps = set()
         abandoned_deps = set()
         unpinned_deps = set()
 
         for f in findings:
-            severity_counts[f.severity.value] = severity_counts.get(
-                f.severity.value, 0) + 1
+            severity_counts[f.severity.value] = severity_counts.get(f.severity.value, 0) + 1
 
             if "Vulnerabilidad" in f.finding_type:
                 vulnerable_deps.add(f.dependency.name)
@@ -39,10 +37,24 @@ class ExecutiveSummaryService:
 
         # Explicación de negocio del riesgo
         risk_explanations = {
-            RiskLevel.CRITICAL: "CRÍTICO: El proyecto contiene al menos una vulnerabilidad crítica explotable en una biblioteca central. Se recomienda encarecidamente corregirla inmediatamente para evitar posibles intrusiones o robo de información.",
-            RiskLevel.HIGH: "ALTO: Se identificaron riesgos significativos o múltiples vulnerabilidades severas que exponen el entorno. Requiere remediación prioritaria en el ciclo actual de desarrollo.",
-            RiskLevel.MEDIUM: "MEDIO: Hay dependencias desactualizadas o configuraciones de versiones inseguras. Planificar mitigación en las próximas ventanas de mantenimiento.",
-            RiskLevel.LOW: "BAJO: El ecosistema se encuentra mayormente estable y seguro. Mantener vigilancia habitual y realizar actualizaciones de mantenimiento ordinarias.",
+            RiskLevel.CRITICAL: (
+                "CRÍTICO: El proyecto contiene al menos una vulnerabilidad crítica explotable "
+                "en una biblioteca central. Se recomienda encarecidamente corregirla inmediatamente "
+                "para evitar posibles intrusiones o robo de información."
+            ),
+            RiskLevel.HIGH: (
+                "ALTO: Se identificaron riesgos significativos o múltiples vulnerabilidades severas "
+                "que exponen el entorno. Requiere remediación prioritaria en el ciclo actual "
+                "de desarrollo."
+            ),
+            RiskLevel.MEDIUM: (
+                "MEDIO: Hay dependencias desactualizadas o configuraciones de versiones inseguras. "
+                "Planificar mitigación en las próximas ventanas de mantenimiento."
+            ),
+            RiskLevel.LOW: (
+                "BAJO: El ecosistema se encuentra mayormente estable y seguro. Mantener vigilancia "
+                "habitual y realizar actualizaciones de mantenimiento ordinarias."
+            ),
         }
 
         return {

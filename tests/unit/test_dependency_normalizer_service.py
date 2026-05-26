@@ -48,7 +48,7 @@ def test_normalize_and_deduplicate_declared_version_update():
         is_direct=True,
         is_pinned=False,
     )
-    
+
     # Passing indirect then direct: declared_version should become "^2.28.0" and is_direct should become True
     res = service.normalize_and_deduplicate([dep_indirect, dep_direct])
     assert len(res) == 1
@@ -78,7 +78,7 @@ def test_normalize_and_deduplicate_installed_version_update():
         is_direct=False,
         is_pinned=True,
     )
-    
+
     res = service.normalize_and_deduplicate([dep_no_install, dep_installed])
     assert len(res) == 1
     assert res[0].installed_version == "2.28.1"
@@ -106,7 +106,7 @@ def test_normalize_and_deduplicate_source_file_update():
         is_direct=True,
         is_pinned=False,
     )
-    
+
     # When both exist, if existing has lock and new has non-lock, update source_file to non-lock
     res = service.normalize_and_deduplicate([dep_lock, dep_toml])
     assert len(res) == 1

@@ -12,9 +12,7 @@ class RecommendationService:
         recommendations: list[dict[str, Any]] = []
 
         # Agrupar hallazgos prioritarios (Críticos y Altos)
-        critical_and_high = [
-            f for f in findings if f.severity in (SeverityLevel.CRITICAL, SeverityLevel.HIGH)
-        ]
+        critical_and_high = [f for f in findings if f.severity in (SeverityLevel.CRITICAL, SeverityLevel.HIGH)]
 
         for finding in critical_and_high:
             dep = finding.dependency
@@ -27,9 +25,15 @@ class RecommendationService:
             )
 
             if dep.name in ("jsonwebtoken", "jwt", "cryptography", "crypto", "pycryptodome"):
-                testing_strategy += "\n⚠️ CRÍTICO: Validar la autenticación de usuarios, la expiración de tokens y el firmado/verificación criptográfica."
+                testing_strategy += (
+                    "\n⚠️ CRÍTICO: Validar la autenticación de usuarios, la expiración de tokens "
+                    "y el firmado/verificación criptográfica."
+                )
             elif dep.name in ("express", "django", "flask", "laravel/framework", "spring"):
-                testing_strategy += "\n⚠️ FRAMEWORK: Realizar un smoke-test completo de las rutas del backend y controladores principales."
+                testing_strategy += (
+                    "\n⚠️ FRAMEWORK: Realizar un smoke-test completo de las rutas del backend "
+                    "y controladores principales."
+                )
 
             recommendations.append(
                 {
@@ -40,8 +44,7 @@ class RecommendationService:
                     "severidad": finding.severity.value,
                     "accion_sugerida": finding.recommendation
                     or RECOMMENDED_ACTIONS.get(finding.severity.value, "Actualizar paquete."),
-                    "requiere_testing": finding.severity
-                    in (SeverityLevel.CRITICAL, SeverityLevel.HIGH),
+                    "requiere_testing": finding.severity in (SeverityLevel.CRITICAL, SeverityLevel.HIGH),
                     "plan_de_pruebas": testing_strategy,
                 }
             )

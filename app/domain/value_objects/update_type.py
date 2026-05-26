@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class UpdateType(str, Enum):
+class UpdateType(StrEnum):
     PATCH = "PATCH"
     MINOR = "MINOR"
     MAJOR = "MAJOR"

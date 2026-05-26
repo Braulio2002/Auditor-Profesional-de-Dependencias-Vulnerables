@@ -18,8 +18,7 @@ class JsonReportExporter(ReportExporterInterface):
         logger.info("Generando reporte JSON...")
 
         # Resolver ruta única para evitar sobrescribir
-        target_path = get_unique_filename(
-            output_dir, self.settings.json_report_name)
+        target_path = get_unique_filename(output_dir, self.settings.json_report_name)
 
         try:
             # Convertir las entidades a diccionarios planos estructurados
@@ -34,8 +33,7 @@ class JsonReportExporter(ReportExporterInterface):
                         "ecosistemas": [eco.value for eco in p.detected_ecosystems],
                         "archivos_dependencias": [
                             str(f.relative_to(self.settings.base_dir))
-                            if hasattr(f, "is_relative_to")
-                            and f.is_relative_to(self.settings.base_dir)
+                            if hasattr(f, "is_relative_to") and f.is_relative_to(self.settings.base_dir)
                             else f.name
                             for f in p.dependency_files
                         ],

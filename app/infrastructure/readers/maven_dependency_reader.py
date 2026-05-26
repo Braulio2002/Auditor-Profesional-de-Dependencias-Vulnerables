@@ -5,7 +5,7 @@ from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
 from app.domain.entities.dependency import Dependency
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.domain.value_objects.dependency_scope import DependencyScope
 from app.domain.value_objects.ecosystem import Ecosystem
 from app.shared.text_utils import clean_dependency_name
@@ -16,13 +16,13 @@ class MavenDependencyReader(DependencyFileReaderInterface):
 
     def read(self, file_path: Path) -> list[Dependency]:
         if not file_path.exists():
-            raise ReaderException(f"El archivo {file_path} no existe.")
+            raise ReaderError(f"El archivo {file_path} no existe.")
 
         try:
             tree = ET.parse(file_path)
             root = tree.getroot()
         except Exception as e:
-            raise ReaderException(f"Error parseando XML en {file_path}: {e}")
+            raise ReaderError(f"Error parseando XML en {file_path}: {e}") from e
 
         # El espacio de nombres (namespace) de Maven es común en los pom.xml
         ns = ""
@@ -64,9 +64,7 @@ class MavenDependencyReader(DependencyFileReaderInterface):
                 dep_name = f"{group_id}:{artifact_id}"
                 clean_name = clean_dependency_name(dep_name)
 
-                declared_ver = (
-                    version_el.text.strip() if (version_el is not None and version_el.text) else ""
-                )
+                declared_ver = version_el.text.strip() if (version_el is not None and version_el.text) else ""
 
                 # Resolver variable si está definida (ej: ${jackson.version})
                 resolved_ver = declared_ver
@@ -78,11 +76,7 @@ class MavenDependencyReader(DependencyFileReaderInterface):
                     # Versión heredada o no especificada en pom directo (ej: de parent bom)
                     resolved_ver = "0.0.0"
 
-                scope_text = (
-                    scope_el.text.strip().upper()
-                    if (scope_el is not None and scope_el.text)
-                    else "COMPILE"
-                )
+                scope_text = scope_el.text.strip().upper() if (scope_el is not None and scope_el.text) else "COMPILE"
 
                 # Mapeo de scopes Maven a Domain scopes
                 scope = DependencyScope.PRODUCTION
@@ -93,9 +87,7 @@ class MavenDependencyReader(DependencyFileReaderInterface):
                 elif scope_text == "RUNTIME":
                     scope = DependencyScope.PRODUCTION
 
-                is_pinned = not any(
-                    c in resolved_ver for c in ["[", "]", "(", ")", "LATEST", "RELEASE", "SNAPSHOT"]
-                )
+                is_pinned = not any(c in resolved_ver for c in ["[", "]", "(", ")", "LATEST", "RELEASE", "SNAPSHOT"])
 
                 dependencies.append(
                     Dependency(

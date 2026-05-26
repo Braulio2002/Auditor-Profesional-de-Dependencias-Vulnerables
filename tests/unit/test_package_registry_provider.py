@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
 import httpx
 
 from app.config.settings import Settings
@@ -36,7 +36,7 @@ def test_registry_npm_success():
     with patch("httpx.Client.get") as mock_get:
         mock_get.return_value = mock_res
         assert provider.get_latest_version("react", Ecosystem.NPM) == "18.2.0"
-        
+
         # Verify cache was populated
         assert provider.cache["npm:react"] == "18.2.0"
 

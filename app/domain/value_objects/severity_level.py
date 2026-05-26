@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class SeverityLevel(str, Enum):
+class SeverityLevel(StrEnum):
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"

@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class DependencyScope(str, Enum):
+class DependencyScope(StrEnum):
     PRODUCTION = "PRODUCTION"
     DEVELOPMENT = "DEVELOPMENT"
     TEST = "TEST"

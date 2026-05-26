@@ -19,8 +19,7 @@ class ExcelReportExporter(ReportExporterInterface):
     def export(self, report: DependencyAuditReport, output_dir: Path) -> Path:
         logger.info("Generando reporte Excel...")
 
-        target_path = get_unique_filename(
-            output_dir, self.settings.excel_report_name)
+        target_path = get_unique_filename(output_dir, self.settings.excel_report_name)
 
         try:
             df_summary = self._prepare_summary_sheet(report)
@@ -33,14 +32,10 @@ class ExcelReportExporter(ReportExporterInterface):
             # Escribir las 6 hojas de forma estructurada a un libro Excel único con Pandas y openpyxl
             with pd.ExcelWriter(target_path, engine="openpyxl") as writer:
                 df_summary.to_excel(writer, sheet_name="Resumen", index=False)
-                df_deps.to_excel(
-                    writer, sheet_name="Dependencias", index=False)
-                df_vulns.to_excel(
-                    writer, sheet_name="Vulnerabilidades", index=False)
-                df_updates.to_excel(
-                    writer, sheet_name="Actualizaciones Sugeridas", index=False)
-                df_configs.to_excel(
-                    writer, sheet_name="Riesgos de Configuración", index=False)
+                df_deps.to_excel(writer, sheet_name="Dependencias", index=False)
+                df_vulns.to_excel(writer, sheet_name="Vulnerabilidades", index=False)
+                df_updates.to_excel(writer, sheet_name="Actualizaciones Sugeridas", index=False)
+                df_configs.to_excel(writer, sheet_name="Riesgos de Configuración", index=False)
                 df_errors.to_excel(writer, sheet_name="Errores", index=False)
 
                 # Ajustar anchos de columnas automáticamente en openpyxl para una estética visual pulida
@@ -48,14 +43,11 @@ class ExcelReportExporter(ReportExporterInterface):
                 for sheet_name in workbook.sheetnames:
                     sheet = workbook[sheet_name]
                     for col in sheet.columns:
-                        max_len = max(len(str(cell.value or ""))
-                                      for cell in col)
+                        max_len = max(len(str(cell.value or "")) for cell in col)
                         col_letter = col[0].column_letter
-                        sheet.column_dimensions[col_letter].width = max(
-                            max_len + 3, 12)
+                        sheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
-            logger.info(
-                f"Reporte Excel de múltiples hojas generado en: {target_path}")
+            logger.info(f"Reporte Excel de múltiples hojas generado en: {target_path}")
             return target_path
 
         except Exception as e:
@@ -66,34 +58,20 @@ class ExcelReportExporter(ReportExporterInterface):
         """Construye el dataframe correspondiente a la hoja 'Resumen'."""
         summary_rows = []
         for p in report.projects:
-            proj_findings = [
-                f for f in report.findings if f.project == p.name]
-            proj_deps = [
-                d
-                for d in report.dependencies
-                if d.source_file in [f.name for f in p.dependency_files]
-            ]
+            proj_findings = [f for f in report.findings if f.project == p.name]
+            proj_deps = [d for d in report.dependencies if d.source_file in [f.name for f in p.dependency_files]]
 
-            ecosystems_str = ", ".join(
-                [eco.value for eco in p.detected_ecosystems])
+            ecosystems_str = ", ".join([eco.value for eco in p.detected_ecosystems])
 
             total_deps = len(proj_deps)
-            vuln_deps_count = len(
-                {f.dependency.name for f in proj_findings if "Vulnerabilidad" in f.finding_type}
-            )
-            crit_count = sum(
-                1 for f in proj_findings if f.severity.value == "CRITICAL")
-            high_count = sum(
-                1 for f in proj_findings if f.severity.value == "HIGH")
-            med_count = sum(
-                1 for f in proj_findings if f.severity.value == "MEDIUM")
-            low_count = sum(
-                1 for f in proj_findings if f.severity.value == "LOW")
+            vuln_deps_count = len({f.dependency.name for f in proj_findings if "Vulnerabilidad" in f.finding_type})
+            crit_count = sum(1 for f in proj_findings if f.severity.value == "CRITICAL")
+            high_count = sum(1 for f in proj_findings if f.severity.value == "HIGH")
+            med_count = sum(1 for f in proj_findings if f.severity.value == "MEDIUM")
+            low_count = sum(1 for f in proj_findings if f.severity.value == "LOW")
 
-            outdated_count = sum(
-                1 for f in proj_findings if "Desactualizada" in f.finding_type)
-            abandoned_count = sum(
-                1 for f in proj_findings if "Abandonada" in f.finding_type)
+            outdated_count = sum(1 for f in proj_findings if "Desactualizada" in f.finding_type)
+            abandoned_count = sum(1 for f in proj_findings if "Abandonada" in f.finding_type)
 
             proj_risk = "BAJO"
             if crit_count > 0:
@@ -143,12 +121,9 @@ class ExcelReportExporter(ReportExporterInterface):
         """Construye el dataframe correspondiente a la hoja 'Dependencias'."""
         deps_rows = []
         for d in report.dependencies:
-            dep_findings = [
-                f for f in report.findings if f.dependency.name.lower() == d.name.lower()
-            ]
+            dep_findings = [f for f in report.findings if f.dependency.name.lower() == d.name.lower()]
             has_findings = len(dep_findings) > 0
-            max_finding_score = max(
-                [f.risk_score for f in dep_findings]) if has_findings else 0
+            max_finding_score = max([f.risk_score for f in dep_findings]) if has_findings else 0
 
             risk_str = "BAJO"
             if max_finding_score >= 76:
@@ -158,11 +133,8 @@ class ExcelReportExporter(ReportExporterInterface):
             elif max_finding_score >= 21:
                 risk_str = "MEDIO"
 
-            estado_act, recommended_ver = self._get_dependency_outdated_version(
-                d, dep_findings, report.recommendations
-            )
-            obs_text = self._get_dependency_observation(
-                dep_findings, has_findings)
+            estado_act, recommended_ver = self._get_dependency_outdated_version(d, dep_findings, report.recommendations)
+            obs_text = self._get_dependency_observation(dep_findings, has_findings)
             proj_orig = self._get_dependency_project_origin(d, report.projects)
 
             deps_rows.append(
@@ -205,27 +177,17 @@ class ExcelReportExporter(ReportExporterInterface):
         self, d: Any, dep_findings: list[Any], recommendations: list[dict[str, Any]]
     ) -> tuple[str, str]:
         """Resuelve el estado de actualización y versión recomendada para una dependencia."""
-        outdated_finding = next(
-            (f for f in dep_findings if "Desactualizada" in f.finding_type), None
-        )
+        outdated_finding = next((f for f in dep_findings if "Desactualizada" in f.finding_type), None)
         if not outdated_finding:
             return "Al día", d.installed_version
 
-        rec = next(
-            (r for r in recommendations if r.get("dependencia") == d.name), None
-        )
-        recommended_ver = (
-            rec.get("version_recomendada", d.installed_version)
-            if rec
-            else d.installed_version
-        )
+        rec = next((r for r in recommendations if r.get("dependencia") == d.name), None)
+        recommended_ver = rec.get("version_recomendada", d.installed_version) if rec else d.installed_version
         return "Desactualizada", recommended_ver
 
     def _get_dependency_observation(self, dep_findings: list[Any], has_findings: bool) -> str:
         """Determina el texto descriptivo de observación basado en hallazgos asociados."""
-        abandoned_finding = next(
-            (f for f in dep_findings if "Abandonada" in f.finding_type), None
-        )
+        abandoned_finding = next((f for f in dep_findings if "Abandonada" in f.finding_type), None)
         if abandoned_finding:
             return "PAQUETE ABANDONADO/DEPRECADO."
         if has_findings:
@@ -235,11 +197,7 @@ class ExcelReportExporter(ReportExporterInterface):
     def _get_dependency_project_origin(self, d: Any, projects: list[Any]) -> str:
         """Encuentra el proyecto al que pertenece originalmente un archivo de dependencia."""
         return next(
-            (
-                p.name
-                for p in projects
-                if d.source_file in [f.name for f in p.dependency_files]
-            ),
+            (p.name for p in projects if d.source_file in [f.name for f in p.dependency_files]),
             "Proyecto Desconocido",
         )
 
@@ -415,8 +373,5 @@ class ExcelReportExporter(ReportExporterInterface):
             )
         df_errors = pd.DataFrame(errors_rows)
         if df_errors.empty:
-            df_errors = pd.DataFrame(
-                columns=["proyecto", "archivo", "tipo_error",
-                         "mensaje_error", "fecha_analisis"]
-            )
+            df_errors = pd.DataFrame(columns=["proyecto", "archivo", "tipo_error", "mensaje_error", "fecha_analisis"])
         return df_errors

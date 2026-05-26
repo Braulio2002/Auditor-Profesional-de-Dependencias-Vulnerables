@@ -8,12 +8,11 @@ from app.shared.logger import logger
 
 try:
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.enums import TA_CENTER
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
     from reportlab.platypus import (
-        KeepTogether,
         PageBreak,
         Paragraph,
         SimpleDocTemplate,
@@ -34,17 +33,13 @@ class PdfReportExporter:
         self.settings = settings
 
     def export(self, report: DependencyAuditReport, output_dir: Path) -> Path:
-        target_path = get_unique_filename(
-            output_dir, self.settings.pdf_report_name)
+        target_path = get_unique_filename(output_dir, self.settings.pdf_report_name)
 
         if not REPORTLAB_AVAILABLE:
-            logger.warning(
-                "reportlab no está instalado. Omitiendo la generación del reporte PDF.")
+            logger.warning("reportlab no está instalado. Omitiendo la generación del reporte PDF.")
             # Crear un archivo de log/texto indicando la falta de librería para que no rompa el flujo
             with open(target_path.with_suffix(".txt"), "w", encoding="utf-8") as f:
-                f.write(
-                    "Instale 'reportlab' para habilitar la exportación del reporte ejecutivo PDF."
-                )
+                f.write("Instale 'reportlab' para habilitar la exportación del reporte ejecutivo PDF.")
             return target_path.with_suffix(".txt")
 
         logger.info("Generando reporte ejecutivo PDF...")
@@ -109,9 +104,7 @@ class PdfReportExporter:
                 textColor=text_dark,
             )
 
-            bold_body_style = ParagraphStyle(
-                "BoldBody", parent=body_style, fontName="Helvetica-Bold"
-            )
+            bold_body_style = ParagraphStyle("BoldBody", parent=body_style, fontName="Helvetica-Bold")
 
             table_header_style = ParagraphStyle(
                 "TableHeader",
@@ -143,14 +136,11 @@ class PdfReportExporter:
             # ================= PAGINA 1: PORTADA =================
             story.append(Spacer(1, 1.5 * inch))
             # Icono representativo en texto
-            story.append(Paragraph("🛡️", ParagraphStyle(
-                "Shield", fontSize=60, alignment=TA_CENTER)))
+            story.append(Paragraph("🛡️", ParagraphStyle("Shield", fontSize=60, alignment=TA_CENTER)))
             story.append(Spacer(1, 0.3 * inch))
-            story.append(
-                Paragraph("Auditor Profesional de Dependencias Vulnerables", title_style))
+            story.append(Paragraph("Auditor Profesional de Dependencias Vulnerables", title_style))
             story.append(Spacer(1, 0.2 * inch))
-            story.append(
-                Paragraph("Reporte Ejecutivo de Seguridad y Supply Chain", subtitle_style))
+            story.append(Paragraph("Reporte Ejecutivo de Seguridad y Supply Chain", subtitle_style))
             story.append(Spacer(1, 2 * inch))
 
             # Tabla de metadatos de portada
@@ -164,21 +154,17 @@ class PdfReportExporter:
                     Paragraph(
                         report.summary.get("riesgo_general", "BAJO"),
                         critical_style
-                        if report.summary.get("riesgo_general")
-                        in ("CRITICAL", "CRÍTICO", "HIGH", "ALTO")
+                        if report.summary.get("riesgo_general") in ("CRITICAL", "CRÍTICO", "HIGH", "ALTO")
                         else body_style,
                     ),
                 ],
                 [
                     Paragraph("Total Proyectos Escaneados:", bold_body_style),
-                    Paragraph(str(report.summary.get(
-                        "total_proyectos", 0)), body_style),
+                    Paragraph(str(report.summary.get("total_proyectos", 0)), body_style),
                 ],
                 [
-                    Paragraph("Total Dependencias Analizadas:",
-                              bold_body_style),
-                    Paragraph(str(report.summary.get(
-                        "total_dependencias", 0)), body_style),
+                    Paragraph("Total Dependencias Analizadas:", bold_body_style),
+                    Paragraph(str(report.summary.get("total_dependencias", 0)), body_style),
                 ],
             ]
             t_meta = Table(meta_data, colWidths=[2.2 * inch, 4 * inch])
@@ -198,19 +184,19 @@ class PdfReportExporter:
             # ================= PAGINA 2: RESUMEN EJECUTIVO =================
             story.append(Paragraph("Resumen Ejecutivo de Seguridad", h1_style))
             summary_text = (
-                f"Este reporte técnico recopila los resultados de la auditoría de seguridad defensiva de dependencias "
-                f"realizada en <b>{report.summary.get('total_proyectos', 0)} proyectos</b> del ecosistema. El análisis identifica "
-                f"vulnerabilidades conocidas (CVE/GHSA), configuraciones de versiones inseguras, bibliotecas abandonadas o deprecadas "
-                f"y duplicaciones que comprometen la cadena de suministro del software (supply chain security)."
+                "Este reporte técnico recopila los resultados de la auditoría de seguridad "
+                "defensiva de dependencias "
+                f"realizada en <b>{report.summary.get('total_proyectos', 0)} proyectos</b> del ecosistema. "
+                "El análisis identifica vulnerabilidades conocidas (CVE/GHSA), configuraciones de "
+                "versiones inseguras, bibliotecas abandonadas o deprecadas y duplicaciones que "
+                "comprometen la cadena de suministro del software (supply chain security)."
             )
             story.append(Paragraph(summary_text, body_style))
             story.append(Spacer(1, 0.2 * inch))
 
             # Explicación del riesgo
-            risk_desc = report.summary.get(
-                "explicacion_riesgo", "Sin explicación disponible.")
-            story.append(
-                Paragraph("<b>Evaluación de Riesgo de Negocio:</b>", bold_body_style))
+            risk_desc = report.summary.get("explicacion_riesgo", "Sin explicación disponible.")
+            story.append(Paragraph("<b>Evaluación de Riesgo de Negocio:</b>", bold_body_style))
             story.append(Spacer(1, 0.05 * inch))
             story.append(
                 Paragraph(
@@ -231,8 +217,7 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Métricas de Vulnerabilidades Encontradas",
-                    ParagraphStyle("Sub", parent=h1_style,
-                                   fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub", parent=h1_style, fontSize=12, spaceAfter=8),
                 )
             )
 
@@ -256,8 +241,7 @@ class PdfReportExporter:
                 ],
                 [
                     Paragraph("🟢 Bajo / Informativo", bold_body_style),
-                    Paragraph(str(counts.get("LOW", 0) +
-                              counts.get("INFO", 0)), body_style),
+                    Paragraph(str(counts.get("LOW", 0) + counts.get("INFO", 0)), body_style),
                 ],
             ]
             t_metrics = Table(metrics_data, colWidths=[3 * inch, 3.2 * inch])
@@ -266,8 +250,7 @@ class PdfReportExporter:
                     [
                         ("BACKGROUND", (0, 0), (-1, 0), primary_color),
                         ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("GRID", (0, 0), (-1, -1), 0.5,
-                         colors.HexColor("#CBD5E0")),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
                         ("PADDING", (0, 0), (-1, -1), 6),
                     ]
                 )
@@ -279,8 +262,7 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Top Riesgos y Dependencias Sensibles",
-                    ParagraphStyle("Sub2", parent=h1_style,
-                                   fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub2", parent=h1_style, fontSize=12, spaceAfter=8),
                 )
             )
             sensitive_text = (
@@ -293,19 +275,17 @@ class PdfReportExporter:
             story.append(PageBreak())
 
             # ================= PAGINA 3: DETALLE TÉCNICO DE VULNERABILIDADES =================
-            story.append(
-                Paragraph("Detalle de Vulnerabilidades Críticas y Altas", h1_style))
+            story.append(Paragraph("Detalle de Vulnerabilidades Críticas y Altas", h1_style))
 
             crit_high_findings = [
-                f
-                for f in report.findings
-                if f.severity in (SeverityLevel.CRITICAL, SeverityLevel.HIGH)
+                f for f in report.findings if f.severity in (SeverityLevel.CRITICAL, SeverityLevel.HIGH)
             ]
 
             if not crit_high_findings:
                 story.append(
                     Paragraph(
-                        "✅ Excelente: No se han detectado vulnerabilidades de severidad Crítica o Alta en los proyectos analizados.",
+                        "✅ Excelente: No se han detectado vulnerabilidades de severidad Crítica o Alta "
+                        "en los proyectos analizados.",
                         body_style,
                     )
                 )
@@ -326,13 +306,10 @@ class PdfReportExporter:
                         [
                             Paragraph(f.project, table_cell_style),
                             Paragraph(f.dependency.name, table_cell_style),
-                            Paragraph(f.dependency.installed_version,
-                                      table_cell_style),
+                            Paragraph(f.dependency.installed_version, table_cell_style),
                             Paragraph(
                                 f.severity.value,
-                                critical_style
-                                if f.severity == SeverityLevel.CRITICAL
-                                else table_cell_style,
+                                critical_style if f.severity == SeverityLevel.CRITICAL else table_cell_style,
                             ),
                             Paragraph(f.finding_type, table_cell_style),
                         ]
@@ -340,15 +317,13 @@ class PdfReportExporter:
 
                 t_vulns = Table(
                     table_data,
-                    colWidths=[1.2 * inch, 1.5 * inch,
-                               0.9 * inch, 0.9 * inch, 2.2 * inch],
+                    colWidths=[1.2 * inch, 1.5 * inch, 0.9 * inch, 0.9 * inch, 2.2 * inch],
                 )
                 t_vulns.setStyle(
                     TableStyle(
                         [
                             ("BACKGROUND", (0, 0), (-1, 0), primary_color),
-                            ("GRID", (0, 0), (-1, -1), 0.5,
-                             colors.HexColor("#CBD5E0")),
+                            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
                             ("PADDING", (0, 0), (-1, -1), 5),
                             ("VALIGN", (0, 0), (-1, -1), "TOP"),
                         ]
@@ -362,32 +337,35 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Plan de Remediación Sugerido",
-                    ParagraphStyle("Sub3", parent=h1_style,
-                                   fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub3", parent=h1_style, fontSize=12, spaceAfter=8),
                 )
             )
 
             if not report.recommendations:
                 story.append(
                     Paragraph(
-                        "No se requieren acciones urgentes de remediación. Mantener el software actualizado periódicamente.",
+                        "No se requieren acciones urgentes de remediación. Mantener el software "
+                        "actualizado periódicamente.",
                         body_style,
                     )
                 )
             else:
-                rec_text = "Se aconseja seguir las siguientes directrices técnicas para corregir los riesgos descubiertos:\n"
+                rec_text = (
+                    "Se aconseja seguir las siguientes directrices técnicas para corregir los riesgos descubiertos:\n"
+                )
                 story.append(Paragraph(rec_text, body_style))
                 story.append(Spacer(1, 0.1 * inch))
 
                 # Mostrar top 5
                 for idx, rec in enumerate(report.recommendations[:5]):
-                    bullet = f"<b>{idx + 1}. {rec.get('dependencia')} ({rec.get('proyecto')}):</b> {rec.get('accion_sugerida')}"
+                    bullet = (
+                        f"<b>{idx + 1}. {rec.get('dependencia')} ({rec.get('proyecto')}):</b> "
+                        f"{rec.get('accion_sugerida')}"
+                    )
                     story.append(
                         Paragraph(
                             bullet,
-                            ParagraphStyle(
-                                "Bullet", parent=body_style, leftIndent=20, bulletIndent=10
-                            ),
+                            ParagraphStyle("Bullet", parent=body_style, leftIndent=20, bulletIndent=10),
                         )
                     )
                     story.append(Spacer(1, 0.05 * inch))
@@ -398,22 +376,21 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Conclusión del Auditor",
-                    ParagraphStyle("Sub4", parent=h1_style,
-                                   fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub4", parent=h1_style, fontSize=12, spaceAfter=8),
                 )
             )
             concl = (
-                "La seguridad en el supply chain es un esfuerzo continuo. Mantener dependencias actualizadas "
-                "de forma recurrente mediante canalizaciones automáticas de CI/CD (DevSecOps) previene activamente "
-                "la exposición a exploits de vulnerabilidades conocidas. Este reporte debe ser utilizado como un baseline "
-                "de hardening técnico para robustecer el ecosistema."
+                "La seguridad en el supply chain es un esfuerzo continuo. Mantener dependencias "
+                "actualizadas de forma recurrente mediante canalizaciones automáticas de CI/CD "
+                "(DevSecOps) previene activamente la exposición a exploits de vulnerabilidades "
+                "conocidas. Este reporte debe ser utilizado como un baseline de hardening técnico "
+                "para robustecer el ecosistema."
             )
             story.append(Paragraph(concl, body_style))
 
             # Compilar el PDF
             doc.build(story)
-            logger.info(
-                f"Reporte ejecutivo PDF generado correctamente en: {target_path}")
+            logger.info(f"Reporte ejecutivo PDF generado correctamente en: {target_path}")
             return target_path
 
         except Exception as e:

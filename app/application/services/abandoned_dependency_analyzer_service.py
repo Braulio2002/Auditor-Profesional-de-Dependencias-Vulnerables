@@ -14,13 +14,21 @@ class AbandonedDependencyAnalyzerService:
         # Base de datos local/estática de dependencias obsoletas populares
         self.abandoned_db: dict[Ecosystem, dict[str, str]] = {
             Ecosystem.NPM: {
-                "request": "El paquete 'request' fue formalmente deprecado en 2020. Use 'axios', 'got' o el nativo 'fetch'.",
+                "request": (
+                    "El paquete 'request' fue formalmente deprecado en 2020. Use 'axios', 'got' o el nativo 'fetch'."
+                ),
                 "node-sass": "Deprecado. Use 'sass' (Dart Sass) en su lugar.",
-                "moment": "En modo de mantenimiento. Considere usar 'date-fns', 'dayjs' o el API temporal nativo.",
-                "express-jwt": "Versiones antiguas obsoletas. Considere migrar a 'jose' o la última versión de express-oauth2-jwt-bearer.",
+                "moment": ("En modo de mantenimiento. Considere usar 'date-fns', 'dayjs' o el API temporal nativo."),
+                "express-jwt": (
+                    "Versiones antiguas obsoletas. Considere migrar a 'jose' o la última "
+                    "versión de express-oauth2-jwt-bearer."
+                ),
             },
             Ecosystem.PIP: {
-                "pycrypto": "Totalmente abandonado. Contiene vulnerabilidades críticas sin resolver. Use 'pycryptodome' en su lugar.",
+                "pycrypto": (
+                    "Totalmente abandonado. Contiene vulnerabilidades críticas sin resolver. "
+                    "Use 'pycryptodome' en su lugar."
+                ),
                 "flask-jwt": "Deprecado y sin mantenimiento. Migre a 'flask-jwt-extended'.",
                 "requests-oauthlib": "Bajo mantenimiento. Evalúe usar 'authlib'.",
             },
@@ -31,9 +39,7 @@ class AbandonedDependencyAnalyzerService:
             },
         }
 
-    def analyze_abandoned(
-        self, project_name: str, dependency: Dependency
-    ) -> DependencyFinding | None:
+    def analyze_abandoned(self, project_name: str, dependency: Dependency) -> DependencyFinding | None:
         """Comprueba si la dependencia está registrada como abandonada o deprecada."""
         eco_db = self.abandoned_db.get(dependency.ecosystem, {})
         reason = eco_db.get(dependency.name.lower())
@@ -47,7 +53,11 @@ class AbandonedDependencyAnalyzerService:
                 severity=SeverityLevel.HIGH,
                 risk_score=score,
                 risk_level=RiskLevel.HIGH,
-                impact="El paquete no recibe actualizaciones de seguridad ni parches de compatibilidad por parte de sus autores, lo cual expone la infraestructura a futuros exploits de zero-days sin resolución.",
+                impact=(
+                    "El paquete no recibe actualizaciones de seguridad ni parches de compatibilidad "
+                    "por parte de sus autores, lo cual expone la infraestructura a futuros exploits "
+                    "de zero-days sin resolución."
+                ),
                 recommendation=reason,
                 references=[
                     "https://github.com/request/request/issues/3142",

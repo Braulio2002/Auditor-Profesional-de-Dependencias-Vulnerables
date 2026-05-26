@@ -16,13 +16,7 @@ class VersionParserService:
             return False
 
         # Para pip: django>=3.0 no está fija, django==3.0 sí
-        if (
-            ">=" in version
-            or "<=" in version
-            or "!=" in version
-            or ">" in version
-            or "<" in version
-        ):
+        if ">=" in version or "<=" in version or "!=" in version or ">" in version or "<" in version:
             return False
 
         # Si es un comodín completo
@@ -46,10 +40,7 @@ class VersionParserService:
         # >= o > sin límite superior (no hay un && o < o <= en la misma cadena)
         version_clean = version.replace(" ", "")
         if (">=" in version_clean or ">" in version_clean) and not (
-            "<" in version_clean
-            or "<=" in version_clean
-            or "," in version_clean
-            or "&&" in version_clean
+            "<" in version_clean or "<=" in version_clean or "," in version_clean or "&&" in version_clean
         ):
             return True
 
@@ -68,11 +59,10 @@ class VersionParserService:
         clean_ver = version.strip()
         for prefix in ["v", "==", "^", "~", ">=", "<=", ">", "<"]:
             if clean_ver.startswith(prefix):
-                clean_ver = clean_ver[len(prefix):]
+                clean_ver = clean_ver[len(prefix) :]
 
         # Expresión regular para Semantic Versioning básico
-        match = re.match(
-            r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9.]+))?", clean_ver)
+        match = re.match(r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9.]+))?", clean_ver)
         if match:
             major = int(match.group(1))
             minor = int(match.group(2)) if match.group(2) else 0

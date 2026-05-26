@@ -8,7 +8,10 @@ from app.shared.logger import logger
 
 
 class PackageRegistryProvider(PackageRegistryProviderInterface):
-    """Consulta los registros oficiales públicos de paquetes (NPM, PyPI, Packagist) para obtener versiones recomendadas."""
+    """Consulta registros públicos de paquetes (NPM, PyPI, Packagist).
+
+    Obtiene versiones recomendadas desde los registros oficiales.
+    """
 
     def __init__(self, settings):
         self.settings = settings
@@ -33,9 +36,7 @@ class PackageRegistryProvider(PackageRegistryProviderInterface):
                 elif ecosystem == Ecosystem.COMPOSER:
                     latest_ver = self._fetch_packagist_latest(client, name)
         except Exception as e:
-            logger.warning(
-                f"No se pudo consultar el registro de paquetes para {name} ({ecosystem.value}): {e}"
-            )
+            logger.warning(f"No se pudo consultar el registro de paquetes para {name} ({ecosystem.value}): {e}")
 
         if latest_ver:
             self.cache[cache_key] = latest_ver
@@ -68,8 +69,6 @@ class PackageRegistryProvider(PackageRegistryProviderInterface):
         versions_data = res.json().get("package", {}).get("versions", {})
         # Obtener la primera versión que no sea de desarrollo (no contenga -dev, alpha, beta)
         for ver_str in versions_data.keys():
-            if not any(
-                x in ver_str.lower() for x in ["dev", "alpha", "beta", "rc"]
-            ):
+            if not any(x in ver_str.lower() for x in ["dev", "alpha", "beta", "rc"]):
                 return ver_str.lstrip("v")
         return None

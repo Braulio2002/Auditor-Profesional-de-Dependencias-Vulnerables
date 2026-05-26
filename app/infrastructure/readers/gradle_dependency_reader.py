@@ -5,7 +5,7 @@ from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
 from app.domain.entities.dependency import Dependency
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.domain.value_objects.dependency_scope import DependencyScope
 from app.domain.value_objects.ecosystem import Ecosystem
 from app.shared.text_utils import clean_dependency_name
@@ -16,14 +16,13 @@ class GradleDependencyReader(DependencyFileReaderInterface):
 
     def read(self, file_path: Path) -> list[Dependency]:
         if not file_path.exists():
-            raise ReaderException(f"El archivo {file_path} no existe.")
+            raise ReaderError(f"El archivo {file_path} no existe.")
 
         try:
             with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
-            raise ReaderException(
-                f"Error leyendo archivo Gradle {file_path}: {e}")
+            raise ReaderError(f"Error leyendo archivo Gradle {file_path}: {e}") from e
 
         dependencies: list[Dependency] = []
 
@@ -44,24 +43,16 @@ class GradleDependencyReader(DependencyFileReaderInterface):
         # Procesar coincidenas compactas
         for match in compact_pattern.finditer(content):
             config, group, name, version = match.groups()
-            dependencies.append(
-                self._build_dependency(
-                    config, group, name, version, file_path.name)
-            )
+            dependencies.append(self._build_dependency(config, group, name, version, file_path.name))
 
         # Procesar coincidencias verbosas
         for match in verbose_pattern.finditer(content):
             config, group, name, version = match.groups()
-            dependencies.append(
-                self._build_dependency(
-                    config, group, name, version, file_path.name)
-            )
+            dependencies.append(self._build_dependency(config, group, name, version, file_path.name))
 
         return dependencies
 
-    def _build_dependency(
-        self, config: str, group: str, name: str, version: str, source_file: str
-    ) -> Dependency:
+    def _build_dependency(self, config: str, group: str, name: str, version: str, source_file: str) -> Dependency:
         dep_name = f"{group}:{name}"
         clean_name = clean_dependency_name(dep_name)
 
@@ -74,8 +65,7 @@ class GradleDependencyReader(DependencyFileReaderInterface):
         elif "only" in config_lower:
             scope = DependencyScope.OPTIONAL
 
-        is_pinned = not any(c in version for c in [
-                            "+", "LATEST", "RELEASE", "SNAPSHOT", "$"])
+        is_pinned = not any(c in version for c in ["+", "LATEST", "RELEASE", "SNAPSHOT", "$"])
 
         return Dependency(
             name=clean_name,

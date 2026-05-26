@@ -13,9 +13,7 @@ class InsecureVersionRuleService:
         self.version_parser = version_parser
         self.settings = settings
 
-    def analyze_dependency_config(
-        self, project_name: str, dependency: Dependency
-    ) -> DependencyFinding | None:
+    def analyze_dependency_config(self, project_name: str, dependency: Dependency) -> DependencyFinding | None:
         """Analiza la versión declarada de una dependencia directa y retorna un Finding si es insegura."""
         # Las indirectas no se declaran en el archivo de configuración directo, no aplica esta regla
         if not dependency.is_direct:
@@ -33,8 +31,15 @@ class InsecureVersionRuleService:
                 severity=SeverityLevel.MEDIUM,
                 risk_score=score,
                 risk_level=RiskLevel.MEDIUM,
-                impact="El uso de comodines permite la descarga automática de cualquier versión futura del paquete, lo cual incrementa exponencialmente el riesgo de supply chain si la biblioteca es comprometida o introduce breaking changes.",
-                recommendation=f"Especificar una versión exacta (pin) para {dependency.name} en el archivo {dependency.source_file}.",
+                impact=(
+                    "El uso de comodines permite la descarga automática de cualquier versión futura "
+                    "del paquete, lo cual incrementa exponencialmente el riesgo de supply chain si la "
+                    "biblioteca es comprometida o introduce breaking changes."
+                ),
+                recommendation=(
+                    f"Especificar una versión exacta (pin) para {dependency.name} "
+                    f"en el archivo {dependency.source_file}."
+                ),
                 references=[],
             )
 
@@ -48,8 +53,15 @@ class InsecureVersionRuleService:
                 severity=SeverityLevel.LOW,
                 risk_score=score,
                 risk_level=RiskLevel.LOW,
-                impact="Un rango demasiado abierto o sin límite superior permite que actualizaciones mayores o menores con breaking changes o fallos de seguridad no testeados se instalen automáticamente.",
-                recommendation=f"Fijar la versión con un operador más seguro (ej: ~= o pin exacto) y definir límites superiores claros en {dependency.source_file}.",
+                impact=(
+                    "Un rango demasiado abierto o sin límite superior permite que actualizaciones "
+                    "mayores o menores con breaking changes o fallos de seguridad no testeados "
+                    "se instalen automáticamente."
+                ),
+                recommendation=(
+                    f"Fijar la versión con un operador más seguro (ej: ~= o pin exacto) y definir "
+                    f"límites superiores claros en {dependency.source_file}."
+                ),
                 references=[],
             )
 

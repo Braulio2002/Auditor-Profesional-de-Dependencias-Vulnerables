@@ -1,24 +1,15 @@
 import re
-import sys
+import tomllib
 from pathlib import Path
 
 from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
 from app.domain.entities.dependency import Dependency
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.domain.value_objects.dependency_scope import DependencyScope
 from app.domain.value_objects.ecosystem import Ecosystem
 from app.shared.text_utils import clean_dependency_name
-
-# Usar tomllib nativo si está disponible (Python 3.11+), de lo contrario tomli
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    try:
-        import tomli as tomllib
-    except ImportError:
-        tomllib = None
 
 
 class PythonDependencyReader(DependencyFileReaderInterface):
@@ -26,7 +17,7 @@ class PythonDependencyReader(DependencyFileReaderInterface):
 
     def read(self, file_path: Path) -> list[Dependency]:
         if not file_path.exists():
-            raise ReaderException(f"El archivo {file_path} no existe.")
+            raise ReaderError(f"El archivo {file_path} no existe.")
 
         dependencies: list[Dependency] = []
 
@@ -43,7 +34,7 @@ class PythonDependencyReader(DependencyFileReaderInterface):
             with open(file_path, encoding="utf-8") as f:
                 lines = f.readlines()
         except Exception as e:
-            raise ReaderException(f"No se pudo leer {file_path}: {e}")
+            raise ReaderError(f"No se pudo leer {file_path}: {e}") from e
 
         for line in lines:
             line = line.strip()
@@ -80,8 +71,7 @@ class PythonDependencyReader(DependencyFileReaderInterface):
                     is_pinned = True
                 else:
                     # En caso de rangos, limpiamos y usamos la versión mínima o primera como estimada
-                    installed_ver = re.split(
-                        r"[ ,;<>]", version_part)[0].strip()
+                    installed_ver = re.split(r"[ ,;<>]", version_part)[0].strip()
             else:
                 declared_ver = "*"
                 installed_ver = "0.0.0"  # No fijado
@@ -103,44 +93,30 @@ class PythonDependencyReader(DependencyFileReaderInterface):
         return dependencies
 
     def _parse_pyproject_toml(self, file_path: Path) -> list[Dependency]:
-        if tomllib is None:
-            raise ReaderException(
-                "Módulo tomllib/tomli no disponible. Instale 'tomli' para leer archivos .toml en versiones de Python anteriores a 3.11."
-            )
-
         try:
             with open(file_path, "rb") as f:
                 data = tomllib.load(f)
         except Exception as e:
-            raise ReaderException(f"Error parseando pyproject.toml: {e}")
+            raise ReaderError(f"Error parseando pyproject.toml: {e}") from e
 
         dependencies: list[Dependency] = []
         poetry_data = data.get("tool", {}).get("poetry", {})
 
         # 1. Dependencias de producción
         prod_deps = poetry_data.get("dependencies", {})
-        self._extract_poetry_deps(
-            prod_deps, DependencyScope.PRODUCTION, file_path.name, dependencies
-        )
+        self._extract_poetry_deps(prod_deps, DependencyScope.PRODUCTION, file_path.name, dependencies)
 
         # 2. Dependencias de desarrollo (Poetry legacy dev-dependencies)
         dev_deps = poetry_data.get("dev-dependencies", {})
-        self._extract_poetry_deps(
-            dev_deps, DependencyScope.DEVELOPMENT, file_path.name, dependencies
-        )
+        self._extract_poetry_deps(dev_deps, DependencyScope.DEVELOPMENT, file_path.name, dependencies)
 
         # 3. Dependencias de desarrollo (Poetry v1.2+ agrupadas)
         group_data = poetry_data.get("group", {})
         if isinstance(group_data, dict):
             for group_name, group_info in group_data.items():
                 group_deps = group_info.get("dependencies", {})
-                scope = (
-                    DependencyScope.DEVELOPMENT
-                    if group_name in ("dev", "test")
-                    else DependencyScope.PRODUCTION
-                )
-                self._extract_poetry_deps(
-                    group_deps, scope, file_path.name, dependencies)
+                scope = DependencyScope.DEVELOPMENT if group_name in ("dev", "test") else DependencyScope.PRODUCTION
+                self._extract_poetry_deps(group_deps, scope, file_path.name, dependencies)
 
         return dependencies
 
@@ -163,14 +139,13 @@ class PythonDependencyReader(DependencyFileReaderInterface):
                 declared_ver = str(value)
 
             # Identificar si está fija o es rango (en Poetry, ^ y ~ son comunes)
-            is_pinned = not any(c in declared_ver for c in [
-                                "^", "~", "*", ">", "<"])
+            is_pinned = not any(c in declared_ver for c in ["^", "~", "*", ">", "<"])
 
             # Estimación simple de versión instalada
             installed_ver = declared_ver
             for prefix in ["^", "~", ">=", "<=", ">", "<", "=="]:
                 if installed_ver.startswith(prefix):
-                    installed_ver = installed_ver[len(prefix):]
+                    installed_ver = installed_ver[len(prefix) :]
             installed_ver = installed_ver.split(",")[0].strip()
             if installed_ver in ("*", ""):
                 installed_ver = "0.0.0"

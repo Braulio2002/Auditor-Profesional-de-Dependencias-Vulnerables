@@ -79,7 +79,7 @@ class AuditDependenciesUseCase:
         # 3. Analizar cada proyecto
         for proj in projects:
             logger.info(f"Procesando proyecto: {proj.name}...")
-            
+
             # Leer dependencias de los archivos del proyecto
             proj_deps = self._read_project_dependencies(proj, errors)
 
@@ -129,12 +129,8 @@ class AuditDependenciesUseCase:
 
     def _build_empty_report(self) -> DependencyAuditReport:
         """Construye un reporte vacío cuando no se encuentran proyectos."""
-        logger.info(
-            "No se encontraron proyectos ni archivos de dependencias compatibles para analizar."
-        )
-        report = DependencyAuditReport(
-            metadata={"status": "empty"}, generated_at=get_current_utc_iso()
-        )
+        logger.info("No se encontraron proyectos ni archivos de dependencias compatibles para analizar.")
+        report = DependencyAuditReport(metadata={"status": "empty"}, generated_at=get_current_utc_iso())
         report.summary = {
             "total_proyectos": 0,
             "total_dependencias": 0,
@@ -170,9 +166,7 @@ class AuditDependenciesUseCase:
         """Audita cada dependencia respecto a reglas de configuración, versiones obsoletas y estado del registro."""
         for dep in dependencies:
             # A. Analizar reglas de versión insegura (ej. unpinned)
-            insecure_finding = self.insecure_version_rule_service.analyze_dependency_config(
-                project_name, dep
-            )
+            insecure_finding = self.insecure_version_rule_service.analyze_dependency_config(project_name, dep)
             if insecure_finding:
                 all_findings.append(insecure_finding)
 
@@ -185,9 +179,7 @@ class AuditDependenciesUseCase:
             if dep.is_direct:
                 self._analyze_outdated_dependency(project_name, dep, all_findings)
 
-    def _analyze_outdated_dependency(
-        self, project_name: str, dep: Any, all_findings: list[DependencyFinding]
-    ) -> None:
+    def _analyze_outdated_dependency(self, project_name: str, dep: Any, all_findings: list[DependencyFinding]) -> None:
         """Verifica si la versión directa de la dependencia está desactualizada y registra hallazgos."""
         latest_ver = self.registry_provider.get_latest_version(dep.name, dep.ecosystem)
         outdated_info = self.outdated_analyzer.analyze_outdated(dep, latest_ver)
@@ -217,15 +209,11 @@ class AuditDependenciesUseCase:
         """Calcula el puntaje de riesgo para cada dependencia basada en sus hallazgos asociados."""
         for dep in dependencies:
             dep_findings = [
-                f
-                for f in all_findings
-                if f.dependency.name.lower() == dep.name.lower() and f.project == project_name
+                f for f in all_findings if f.dependency.name.lower() == dep.name.lower() and f.project == project_name
             ]
             self.risk_calculator.calculate_score_and_level(dep, dep_findings)
 
-    def _export_reports(
-        self, report: DependencyAuditReport, errors: list[dict[str, Any]]
-    ) -> None:
+    def _export_reports(self, report: DependencyAuditReport, errors: list[dict[str, Any]]) -> None:
         """Exporta el reporte consolidado a todos los formatos registrados."""
         generated_paths = []
         for exporter in self.exporters:
@@ -233,8 +221,7 @@ class AuditDependenciesUseCase:
                 path = exporter.export(report, self.settings.datos_salida_dir)
                 generated_paths.append(path)
             except Exception as e:
-                logger.error(
-                    f"Fallo al exportar reporte con {exporter.__class__.__name__}: {e}")
+                logger.error(f"Fallo al exportar reporte con {exporter.__class__.__name__}: {e}")
                 errors.append(
                     {
                         "proyecto": "Global",
@@ -243,7 +230,4 @@ class AuditDependenciesUseCase:
                         "mensaje_error": f"Fallo al escribir reporte: {e}",
                     }
                 )
-        logger.info(
-            f"Auditoría completada. Se generaron {len(generated_paths)} archivos de reportes técnicos."
-        )
-
+        logger.info(f"Auditoría completada. Se generaron {len(generated_paths)} archivos de reportes técnicos.")

@@ -6,7 +6,7 @@ from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
 from app.domain.entities.dependency import Dependency
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.domain.value_objects.dependency_scope import DependencyScope
 from app.domain.value_objects.ecosystem import Ecosystem
 from app.shared.logger import logger
@@ -32,9 +32,7 @@ class ComposerDependencyReader(DependencyFileReaderInterface):
         # y dependencias indirectas
         lock_info = self._load_lockfile_info(actual_composer_file.parent)
 
-        dependencies = self._parse_direct_dependencies(
-            composer_data, lock_info, actual_composer_file.name
-        )
+        dependencies = self._parse_direct_dependencies(composer_data, lock_info, actual_composer_file.name)
 
         # Agregar indirectas desde composer.lock
         direct_names = {dep.name for dep in dependencies}
@@ -46,7 +44,7 @@ class ComposerDependencyReader(DependencyFileReaderInterface):
     def _load_composer_json(self, file_path: Path) -> dict[str, Any]:
         """Busca y carga de forma segura el archivo composer.json."""
         if not file_path.exists():
-            raise ReaderException(f"El archivo {file_path} no existe.")
+            raise ReaderError(f"El archivo {file_path} no existe.")
 
         if file_path.name != self.COMPOSER_JSON:
             file_path = file_path.parent / self.COMPOSER_JSON
@@ -57,9 +55,7 @@ class ComposerDependencyReader(DependencyFileReaderInterface):
             with open(file_path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            raise ReaderException(
-                f"Error decodificando composer.json en {file_path}: {e}"
-            ) from e
+            raise ReaderError(f"Error decodificando composer.json en {file_path}: {e}") from e
 
     def _parse_direct_dependencies(
         self,
@@ -92,9 +88,7 @@ class ComposerDependencyReader(DependencyFileReaderInterface):
                 if not installed_ver:
                     installed_ver = self._clean_declared_version(declared_ver)
 
-                is_pinned = not any(
-                    c in declared_ver for c in ["^", "~", "*", ">", "<"]
-                )
+                is_pinned = not any(c in declared_ver for c in ["^", "~", "*", ">", "<"])
 
                 dependencies.append(
                     Dependency(
@@ -110,9 +104,7 @@ class ComposerDependencyReader(DependencyFileReaderInterface):
                 )
         return dependencies
 
-    def _parse_indirect_dependencies(
-        self, lock_info: dict[str, dict], direct_names: set[str]
-    ) -> list[Dependency]:
+    def _parse_indirect_dependencies(self, lock_info: dict[str, dict], direct_names: set[str]) -> list[Dependency]:
         """Mapea dependencias indirectas desde composer.lock."""
         dependencies: list[Dependency] = []
         for name, info in lock_info.items():

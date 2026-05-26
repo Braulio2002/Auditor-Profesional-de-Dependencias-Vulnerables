@@ -36,9 +36,7 @@ class MockVulnerabilityProvider(VulnerabilityProviderInterface):
     def get_name(self) -> str:
         return "Mock Provider"
 
-    def fetch_vulnerabilities(
-        self, dependencies: list[Dependency]
-    ) -> dict[str, list[Vulnerability]]:
+    def fetch_vulnerabilities(self, dependencies: list[Dependency]) -> dict[str, list[Vulnerability]]:
         # Si consultan lodash, retornar una vulnerabilidad crítica simulada
         results = {}
         for dep in dependencies:
@@ -123,20 +121,14 @@ def test_audit_dependencies_use_case_flow(tmp_path: Path):
     assert report.summary["total_proyectos"] >= 3
 
     # Verificar que se reportó la vulnerabilidad de lodash
-    lodash_vuln = [
-        f
-        for f in report.findings
-        if f.dependency.name == "lodash" and "Vulnerabilidad" in f.finding_type
-    ]
+    lodash_vuln = [f for f in report.findings if f.dependency.name == "lodash" and "Vulnerabilidad" in f.finding_type]
     assert len(lodash_vuln) > 0
     assert lodash_vuln[0].severity == SeverityLevel.CRITICAL
 
     # 4. Validar archivos físicos generados en datos_salida/
     json_reports = list(settings.datos_salida_dir.glob("*.json"))
     xlsx_reports = list(settings.datos_salida_dir.glob("*.xlsx"))
-    pdf_reports = list(settings.datos_salida_dir.glob("*.pdf")) or list(
-        settings.datos_salida_dir.glob("*.txt")
-    )
+    pdf_reports = list(settings.datos_salida_dir.glob("*.pdf")) or list(settings.datos_salida_dir.glob("*.txt"))
 
     assert len(json_reports) == 1
     assert len(xlsx_reports) == 1

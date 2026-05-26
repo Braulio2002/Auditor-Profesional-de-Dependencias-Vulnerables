@@ -37,8 +37,7 @@ class RiskScoreCalculatorService:
 
         # ELEVACIÓN DE PRIORIDAD POR DEPENDENCIA SENSIBLE
         # Si es un componente sensible (criptografía, autenticación, base de datos) y tiene vulnerabilidades
-        has_vulnerabilities = any(
-            "Vulnerabilidad" in f.finding_type for f in findings)
+        has_vulnerabilities = any("Vulnerabilidad" in f.finding_type for f in findings)
         if has_vulnerabilities and self.is_sensitive_dependency(dependency.name):
             # Penalización por componente sensible: subir +15 puntos (máximo 100)
             original_score = max_score
@@ -78,14 +77,12 @@ class RiskScoreCalculatorService:
             return RiskLevel.CRITICAL
 
         # Si hay varios hallazgos de severidad ALTA
-        high_findings_count = sum(
-            1 for f in findings if f.severity == SeverityLevel.HIGH)
+        high_findings_count = sum(1 for f in findings if f.severity == SeverityLevel.HIGH)
         if high_findings_count >= 2 or max_score >= 51:
             return RiskLevel.HIGH
 
         # Si predominan hallazgos de severidad MEDIA
-        medium_findings_count = sum(
-            1 for f in findings if f.severity == SeverityLevel.MEDIUM)
+        medium_findings_count = sum(1 for f in findings if f.severity == SeverityLevel.MEDIUM)
         if medium_findings_count >= 1 or max_score >= 21:
             return RiskLevel.MEDIUM
 

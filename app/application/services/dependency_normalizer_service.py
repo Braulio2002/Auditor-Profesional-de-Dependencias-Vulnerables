@@ -41,4 +41,3 @@ class DependencyNormalizerService:
         # Mantener la información del archivo de origen más informativo
         if existing.source_file.endswith("lock") and not dep.source_file.endswith("lock"):
             existing.source_file = dep.source_file
-

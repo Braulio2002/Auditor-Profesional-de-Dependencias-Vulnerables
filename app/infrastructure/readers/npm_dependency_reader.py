@@ -5,11 +5,11 @@ from app.application.interfaces.dependency_file_reader_interface import (
     DependencyFileReaderInterface,
 )
 from app.domain.entities.dependency import Dependency
-from app.domain.exceptions.domain_exceptions import ReaderException
+from app.domain.exceptions.domain_exceptions import ReaderError
 from app.domain.value_objects.dependency_scope import DependencyScope
 from app.domain.value_objects.ecosystem import Ecosystem
-from app.shared.text_utils import clean_dependency_name
 from app.shared.logger import logger
+from app.shared.text_utils import clean_dependency_name
 
 
 class NpmDependencyReader(DependencyFileReaderInterface):
@@ -17,7 +17,7 @@ class NpmDependencyReader(DependencyFileReaderInterface):
 
     def read(self, file_path: Path) -> list[Dependency]:
         if not file_path.exists():
-            raise ReaderException(f"El archivo {file_path} no existe.")
+            raise ReaderError(f"El archivo {file_path} no existe.")
 
         if file_path.name != "package.json":
             # Si nos pasan un lockfile, intentamos procesar el package.json correspondiente
@@ -29,8 +29,7 @@ class NpmDependencyReader(DependencyFileReaderInterface):
             with open(file_path, encoding="utf-8") as f:
                 pkg_data = json.load(f)
         except Exception as e:
-            raise ReaderException(
-                f"Error decodificando package.json en {file_path}: {e}")
+            raise ReaderError(f"Error decodificando package.json en {file_path}: {e}") from e
 
         # Intentar cargar package-lock.json para obtener las versiones reales instaladas
         lock_versions = self._load_lockfile_versions(file_path.parent)
@@ -52,13 +51,12 @@ class NpmDependencyReader(DependencyFileReaderInterface):
 
             for name, declared_ver in deps_dict.items():
                 clean_name = clean_dependency_name(name)
-                # La versión instalada se extrae de package-lock.json si existe, o usamos la declarada limpia de comodines
+                # Versión instalada desde package-lock.json si existe; si no, la declarada sin comodines
                 installed_ver = lock_versions.get(clean_name, "")
                 if not installed_ver:
                     installed_ver = self._clean_declared_version(declared_ver)
 
-                is_pinned = not any(c in declared_ver for c in [
-                                    "^", "~", "*", ">", "<", "latest"])
+                is_pinned = not any(c in declared_ver for c in ["^", "~", "*", ">", "<", "latest"])
 
                 dependencies.append(
                     Dependency(
@@ -97,7 +95,7 @@ class NpmDependencyReader(DependencyFileReaderInterface):
         clean_ver = declared_ver.strip()
         for prefix in ["^", "~", ">=", "<=", ">", "<"]:
             if clean_ver.startswith(prefix):
-                clean_ver = clean_ver[len(prefix):]
+                clean_ver = clean_ver[len(prefix) :]
         return clean_ver.split(" ")[0].strip()
 
     def _load_lockfile_versions(self, project_dir: Path) -> dict[str, str]:
@@ -132,7 +130,6 @@ class NpmDependencyReader(DependencyFileReaderInterface):
                     if name and version:
                         versions[clean_dependency_name(name)] = version
         except Exception as e:
-            logger.warning(
-                f"No se pudo parsear package-lock.json en {lock_path}: {e}")
+            logger.warning(f"No se pudo parsear package-lock.json en {lock_path}: {e}")
 
         return versions

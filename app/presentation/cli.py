@@ -62,14 +62,10 @@ class CLI:
 
         print("-" * 70)
         risk_color = (
-            "\x1b[31;1m"
-            if summary.get("riesgo_general") in ("CRITICAL", "CRÍTICO", "HIGH", "ALTO")
-            else "\x1b[32;1m"
+            "\x1b[31;1m" if summary.get("riesgo_general") in ("CRITICAL", "CRÍTICO", "HIGH", "ALTO") else "\x1b[32;1m"
         )
         reset = "\x1b[0m"
-        print(
-            f" RIESGO GENERAL DEL PROYECTO: {risk_color}{summary.get('riesgo_general', 'BAJO')}{reset}"
-        )
+        print(f" RIESGO GENERAL DEL PROYECTO: {risk_color}{summary.get('riesgo_general', 'BAJO')}{reset}")
         print(f" Explicación: {summary.get('explicacion_riesgo', '')}")
 
         if report.errors:

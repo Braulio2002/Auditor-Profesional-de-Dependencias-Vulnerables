@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Ecosystem(str, Enum):
+class Ecosystem(StrEnum):
     NPM = "npm"
     PIP = "pip"
     POETRY = "poetry"

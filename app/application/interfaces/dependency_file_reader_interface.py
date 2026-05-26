@@ -18,6 +18,6 @@ class DependencyFileReaderInterface(ABC):
             List[Dependency]: Lista de dependencias extraídas.
 
         Raises:
-            ReaderException: Si ocurre un error al parsear o leer el archivo.
+            ReaderError: Si ocurre un error al parsear o leer el archivo.
         """
         pass
