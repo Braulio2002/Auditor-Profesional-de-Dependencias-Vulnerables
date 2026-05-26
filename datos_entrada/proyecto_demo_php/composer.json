@@ -1,0 +1,12 @@
+{
+  "name": "demo/proyecto-php",
+  "description": "Proyecto PHP de demostraci\u00f3n",
+  "require": {
+    "php": ">=7.4",
+    "laravel/framework": "^8.0",
+    "guzzlehttp/guzzle": "^6.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  }
+}

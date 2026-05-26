@@ -1,0 +1,16 @@
+{
+  "name": "proyecto-demo-node",
+  "version": "1.0.0",
+  "description": "Proyecto de demostraci\u00f3n vulnerable Node.js",
+  "main": "index.js",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "express": "~4.16.0",
+    "axios": "*",
+    "jsonwebtoken": "8.5.1"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "eslint": "latest"
+  }
+}

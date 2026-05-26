@@ -1,0 +1,10 @@
+# Requerimientos de Producción
+requests==2.20.0
+django>=3.2,<4.0
+urllib3==1.26.5
+cryptography
+pyyaml>=5.4
+
+# Requerimientos de Desarrollo
+pytest
+black==*
