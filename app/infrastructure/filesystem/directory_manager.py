@@ -32,7 +32,8 @@ class DirectoryManager:
             self._create_demo_python_project()
             self._create_demo_php_project()
             (self.settings.datos_entrada_dir / ".gitkeep").touch()
-            logger.info("Proyectos demo creados con éxito en 'datos_entrada/'.")
+            logger.info(
+                "Proyectos demo creados con éxito en 'datos_entrada/'.")
 
     def _create_demo_node_project(self) -> None:
         proj_dir = self.settings.datos_entrada_dir / "proyecto_demo_node"

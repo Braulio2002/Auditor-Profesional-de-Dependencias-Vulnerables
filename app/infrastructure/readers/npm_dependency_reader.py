@@ -29,7 +29,8 @@ class NpmDependencyReader(DependencyFileReaderInterface):
             with open(file_path, encoding="utf-8") as f:
                 pkg_data = json.load(f)
         except Exception as e:
-            raise ReaderException(f"Error decodificando package.json en {file_path}: {e}")
+            raise ReaderException(
+                f"Error decodificando package.json en {file_path}: {e}")
 
         # Intentar cargar package-lock.json para obtener las versiones reales instaladas
         lock_versions = self._load_lockfile_versions(file_path.parent)
@@ -56,7 +57,8 @@ class NpmDependencyReader(DependencyFileReaderInterface):
                 if not installed_ver:
                     installed_ver = self._clean_declared_version(declared_ver)
 
-                is_pinned = not any(c in declared_ver for c in ["^", "~", "*", ">", "<", "latest"])
+                is_pinned = not any(c in declared_ver for c in [
+                                    "^", "~", "*", ">", "<", "latest"])
 
                 dependencies.append(
                     Dependency(
@@ -95,7 +97,7 @@ class NpmDependencyReader(DependencyFileReaderInterface):
         clean_ver = declared_ver.strip()
         for prefix in ["^", "~", ">=", "<=", ">", "<"]:
             if clean_ver.startswith(prefix):
-                clean_ver = clean_ver[len(prefix) :]
+                clean_ver = clean_ver[len(prefix):]
         return clean_ver.split(" ")[0].strip()
 
     def _load_lockfile_versions(self, project_dir: Path) -> dict[str, str]:
@@ -130,6 +132,7 @@ class NpmDependencyReader(DependencyFileReaderInterface):
                     if name and version:
                         versions[clean_dependency_name(name)] = version
         except Exception as e:
-            logger.warning(f"No se pudo parsear package-lock.json en {lock_path}: {e}")
+            logger.warning(
+                f"No se pudo parsear package-lock.json en {lock_path}: {e}")
 
         return versions

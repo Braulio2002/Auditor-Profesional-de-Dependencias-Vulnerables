@@ -80,7 +80,8 @@ class PythonDependencyReader(DependencyFileReaderInterface):
                     is_pinned = True
                 else:
                     # En caso de rangos, limpiamos y usamos la versión mínima o primera como estimada
-                    installed_ver = re.split(r"[ ,;<>]", version_part)[0].strip()
+                    installed_ver = re.split(
+                        r"[ ,;<>]", version_part)[0].strip()
             else:
                 declared_ver = "*"
                 installed_ver = "0.0.0"  # No fijado
@@ -138,7 +139,8 @@ class PythonDependencyReader(DependencyFileReaderInterface):
                     if group_name in ("dev", "test")
                     else DependencyScope.PRODUCTION
                 )
-                self._extract_poetry_deps(group_deps, scope, file_path.name, dependencies)
+                self._extract_poetry_deps(
+                    group_deps, scope, file_path.name, dependencies)
 
         return dependencies
 
@@ -161,13 +163,14 @@ class PythonDependencyReader(DependencyFileReaderInterface):
                 declared_ver = str(value)
 
             # Identificar si está fija o es rango (en Poetry, ^ y ~ son comunes)
-            is_pinned = not any(c in declared_ver for c in ["^", "~", "*", ">", "<"])
+            is_pinned = not any(c in declared_ver for c in [
+                                "^", "~", "*", ">", "<"])
 
             # Estimación simple de versión instalada
             installed_ver = declared_ver
             for prefix in ["^", "~", ">=", "<=", ">", "<", "=="]:
                 if installed_ver.startswith(prefix):
-                    installed_ver = installed_ver[len(prefix) :]
+                    installed_ver = installed_ver[len(prefix):]
             installed_ver = installed_ver.split(",")[0].strip()
             if installed_ver in ("*", ""):
                 installed_ver = "0.0.0"

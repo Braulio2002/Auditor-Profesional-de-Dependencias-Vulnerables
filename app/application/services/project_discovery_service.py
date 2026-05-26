@@ -12,18 +12,21 @@ class ProjectDiscoveryService:
         self.settings = settings
 
     def discover_projects(self) -> list[ProjectScanTarget]:
-        logger.info(f"Buscando proyectos en: {self.settings.datos_entrada_dir}")
+        logger.info(
+            f"Buscando proyectos en: {self.settings.datos_entrada_dir}")
         projects: list[ProjectScanTarget] = []
 
         if not self.settings.datos_entrada_dir.exists():
             return []
 
         # Escanear subdirectorios directos en datos_entrada/ como proyectos individuales
-        subdirs = [p for p in self.settings.datos_entrada_dir.iterdir() if p.is_dir()]
+        subdirs = [p for p in self.settings.datos_entrada_dir.iterdir()
+                   if p.is_dir()]
 
         # Si no hay subcarpetas pero hay archivos de dependencias directamente en datos_entrada/
         if not subdirs:
-            root_files = self._scan_dir_for_dependency_files(self.settings.datos_entrada_dir)
+            root_files = self._scan_dir_for_dependency_files(
+                self.settings.datos_entrada_dir)
             if root_files:
                 target = self._build_scan_target(
                     "Proyecto Raíz", self.settings.datos_entrada_dir, root_files
@@ -38,9 +41,11 @@ class ProjectDiscoveryService:
                     continue
                 files = self._scan_dir_for_dependency_files(subdir)
                 if files:
-                    target = self._build_scan_target(subdir.name, subdir, files)
+                    target = self._build_scan_target(
+                        subdir.name, subdir, files)
                     projects.append(target)
-                    logger.info(f"Proyecto detectado: {subdir.name} con {len(files)} archivos.")
+                    logger.info(
+                        f"Proyecto detectado: {subdir.name} con {len(files)} archivos.")
 
         return projects
 

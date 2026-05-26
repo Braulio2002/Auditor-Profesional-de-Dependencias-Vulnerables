@@ -20,25 +20,25 @@ class DependencyNormalizerService:
                 dep.name = name_normalized
                 normalized[key] = dep
             else:
-                existing = normalized[key]
-                # Si la versión declarada o la instalada es más completa en la nueva dependencia, actualizarla.
-                # Priorizar los datos obtenidos de lockfiles (que típicamente tienen is_direct=False o declared_version='indirect' pero tienen versión exacta)
-                # O si la actual es indirecta y la nueva es directa (tiene declared_version de verdad).
-
-                if existing.declared_version in (
-                    "indirect",
-                    "",
-                    "*",
-                ) and dep.declared_version not in ("indirect", "", "*"):
-                    existing.declared_version = dep.declared_version
-                    existing.is_direct = True
-
-                if not existing.installed_version or existing.installed_version == "0.0.0":
-                    if dep.installed_version and dep.installed_version != "0.0.0":
-                        existing.installed_version = dep.installed_version
-
-                # Mantener la información del archivo de origen más informativo
-                if existing.source_file.endswith("lock") and not dep.source_file.endswith("lock"):
-                    existing.source_file = dep.source_file
+                self._update_existing_dependency(normalized[key], dep)
 
         return list(normalized.values())
+
+    def _update_existing_dependency(self, existing: Dependency, dep: Dependency) -> None:
+        """Actualiza una dependencia existente con información más completa de una nueva."""
+        if existing.declared_version in (
+            "indirect",
+            "",
+            "*",
+        ) and dep.declared_version not in ("indirect", "", "*"):
+            existing.declared_version = dep.declared_version
+            existing.is_direct = True
+
+        if not existing.installed_version or existing.installed_version == "0.0.0":
+            if dep.installed_version and dep.installed_version != "0.0.0":
+                existing.installed_version = dep.installed_version
+
+        # Mantener la información del archivo de origen más informativo
+        if existing.source_file.endswith("lock") and not dep.source_file.endswith("lock"):
+            existing.source_file = dep.source_file
+

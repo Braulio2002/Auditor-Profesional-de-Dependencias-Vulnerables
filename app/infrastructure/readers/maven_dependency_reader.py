@@ -75,7 +75,8 @@ class MavenDependencyReader(DependencyFileReaderInterface):
                     resolved_ver = properties.get(prop_key, declared_ver)
 
                 if not resolved_ver:
-                    resolved_ver = "0.0.0"  # Versión heredada o no especificada en pom directo (ej: de parent bom)
+                    # Versión heredada o no especificada en pom directo (ej: de parent bom)
+                    resolved_ver = "0.0.0"
 
                 scope_text = (
                     scope_el.text.strip().upper()

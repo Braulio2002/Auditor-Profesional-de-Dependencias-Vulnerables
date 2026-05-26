@@ -68,10 +68,11 @@ class VersionParserService:
         clean_ver = version.strip()
         for prefix in ["v", "==", "^", "~", ">=", "<=", ">", "<"]:
             if clean_ver.startswith(prefix):
-                clean_ver = clean_ver[len(prefix) :]
+                clean_ver = clean_ver[len(prefix):]
 
         # Expresión regular para Semantic Versioning básico
-        match = re.match(r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9.]+))?", clean_ver)
+        match = re.match(
+            r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9.]+))?", clean_ver)
         if match:
             major = int(match.group(1))
             minor = int(match.group(2)) if match.group(2) else 0

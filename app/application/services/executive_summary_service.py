@@ -19,14 +19,16 @@ class ExecutiveSummaryService:
     ) -> dict[str, Any]:
 
         # Conteo de vulnerabilidades por severidad
-        severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0}
+        severity_counts = {"CRITICAL": 0, "HIGH": 0,
+                           "MEDIUM": 0, "LOW": 0, "INFO": 0}
 
         vulnerable_deps = set()
         abandoned_deps = set()
         unpinned_deps = set()
 
         for f in findings:
-            severity_counts[f.severity.value] = severity_counts.get(f.severity.value, 0) + 1
+            severity_counts[f.severity.value] = severity_counts.get(
+                f.severity.value, 0) + 1
 
             if "Vulnerabilidad" in f.finding_type:
                 vulnerable_deps.add(f.dependency.name)

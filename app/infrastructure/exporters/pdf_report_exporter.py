@@ -34,10 +34,12 @@ class PdfReportExporter:
         self.settings = settings
 
     def export(self, report: DependencyAuditReport, output_dir: Path) -> Path:
-        target_path = get_unique_filename(output_dir, self.settings.pdf_report_name)
+        target_path = get_unique_filename(
+            output_dir, self.settings.pdf_report_name)
 
         if not REPORTLAB_AVAILABLE:
-            logger.warning("reportlab no está instalado. Omitiendo la generación del reporte PDF.")
+            logger.warning(
+                "reportlab no está instalado. Omitiendo la generación del reporte PDF.")
             # Crear un archivo de log/texto indicando la falta de librería para que no rompa el flujo
             with open(target_path.with_suffix(".txt"), "w", encoding="utf-8") as f:
                 f.write(
@@ -141,11 +143,14 @@ class PdfReportExporter:
             # ================= PAGINA 1: PORTADA =================
             story.append(Spacer(1, 1.5 * inch))
             # Icono representativo en texto
-            story.append(Paragraph("🛡️", ParagraphStyle("Shield", fontSize=60, alignment=TA_CENTER)))
+            story.append(Paragraph("🛡️", ParagraphStyle(
+                "Shield", fontSize=60, alignment=TA_CENTER)))
             story.append(Spacer(1, 0.3 * inch))
-            story.append(Paragraph("Auditor Profesional de Dependencias Vulnerables", title_style))
+            story.append(
+                Paragraph("Auditor Profesional de Dependencias Vulnerables", title_style))
             story.append(Spacer(1, 0.2 * inch))
-            story.append(Paragraph("Reporte Ejecutivo de Seguridad y Supply Chain", subtitle_style))
+            story.append(
+                Paragraph("Reporte Ejecutivo de Seguridad y Supply Chain", subtitle_style))
             story.append(Spacer(1, 2 * inch))
 
             # Tabla de metadatos de portada
@@ -166,11 +171,14 @@ class PdfReportExporter:
                 ],
                 [
                     Paragraph("Total Proyectos Escaneados:", bold_body_style),
-                    Paragraph(str(report.summary.get("total_proyectos", 0)), body_style),
+                    Paragraph(str(report.summary.get(
+                        "total_proyectos", 0)), body_style),
                 ],
                 [
-                    Paragraph("Total Dependencias Analizadas:", bold_body_style),
-                    Paragraph(str(report.summary.get("total_dependencias", 0)), body_style),
+                    Paragraph("Total Dependencias Analizadas:",
+                              bold_body_style),
+                    Paragraph(str(report.summary.get(
+                        "total_dependencias", 0)), body_style),
                 ],
             ]
             t_meta = Table(meta_data, colWidths=[2.2 * inch, 4 * inch])
@@ -199,8 +207,10 @@ class PdfReportExporter:
             story.append(Spacer(1, 0.2 * inch))
 
             # Explicación del riesgo
-            risk_desc = report.summary.get("explicacion_riesgo", "Sin explicación disponible.")
-            story.append(Paragraph("<b>Evaluación de Riesgo de Negocio:</b>", bold_body_style))
+            risk_desc = report.summary.get(
+                "explicacion_riesgo", "Sin explicación disponible.")
+            story.append(
+                Paragraph("<b>Evaluación de Riesgo de Negocio:</b>", bold_body_style))
             story.append(Spacer(1, 0.05 * inch))
             story.append(
                 Paragraph(
@@ -221,7 +231,8 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Métricas de Vulnerabilidades Encontradas",
-                    ParagraphStyle("Sub", parent=h1_style, fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub", parent=h1_style,
+                                   fontSize=12, spaceAfter=8),
                 )
             )
 
@@ -245,7 +256,8 @@ class PdfReportExporter:
                 ],
                 [
                     Paragraph("🟢 Bajo / Informativo", bold_body_style),
-                    Paragraph(str(counts.get("LOW", 0) + counts.get("INFO", 0)), body_style),
+                    Paragraph(str(counts.get("LOW", 0) +
+                              counts.get("INFO", 0)), body_style),
                 ],
             ]
             t_metrics = Table(metrics_data, colWidths=[3 * inch, 3.2 * inch])
@@ -254,7 +266,8 @@ class PdfReportExporter:
                     [
                         ("BACKGROUND", (0, 0), (-1, 0), primary_color),
                         ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                        ("GRID", (0, 0), (-1, -1), 0.5,
+                         colors.HexColor("#CBD5E0")),
                         ("PADDING", (0, 0), (-1, -1), 6),
                     ]
                 )
@@ -266,7 +279,8 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Top Riesgos y Dependencias Sensibles",
-                    ParagraphStyle("Sub2", parent=h1_style, fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub2", parent=h1_style,
+                                   fontSize=12, spaceAfter=8),
                 )
             )
             sensitive_text = (
@@ -279,7 +293,8 @@ class PdfReportExporter:
             story.append(PageBreak())
 
             # ================= PAGINA 3: DETALLE TÉCNICO DE VULNERABILIDADES =================
-            story.append(Paragraph("Detalle de Vulnerabilidades Críticas y Altas", h1_style))
+            story.append(
+                Paragraph("Detalle de Vulnerabilidades Críticas y Altas", h1_style))
 
             crit_high_findings = [
                 f
@@ -305,12 +320,14 @@ class PdfReportExporter:
                     ]
                 ]
 
-                for f in crit_high_findings[:15]:  # Mostrar los primeros 15 para mantenerlo limpio
+                # Mostrar los primeros 15 para mantenerlo limpio
+                for f in crit_high_findings[:15]:
                     table_data.append(
                         [
                             Paragraph(f.project, table_cell_style),
                             Paragraph(f.dependency.name, table_cell_style),
-                            Paragraph(f.dependency.installed_version, table_cell_style),
+                            Paragraph(f.dependency.installed_version,
+                                      table_cell_style),
                             Paragraph(
                                 f.severity.value,
                                 critical_style
@@ -323,13 +340,15 @@ class PdfReportExporter:
 
                 t_vulns = Table(
                     table_data,
-                    colWidths=[1.2 * inch, 1.5 * inch, 0.9 * inch, 0.9 * inch, 2.2 * inch],
+                    colWidths=[1.2 * inch, 1.5 * inch,
+                               0.9 * inch, 0.9 * inch, 2.2 * inch],
                 )
                 t_vulns.setStyle(
                     TableStyle(
                         [
                             ("BACKGROUND", (0, 0), (-1, 0), primary_color),
-                            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                            ("GRID", (0, 0), (-1, -1), 0.5,
+                             colors.HexColor("#CBD5E0")),
                             ("PADDING", (0, 0), (-1, -1), 5),
                             ("VALIGN", (0, 0), (-1, -1), "TOP"),
                         ]
@@ -343,7 +362,8 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Plan de Remediación Sugerido",
-                    ParagraphStyle("Sub3", parent=h1_style, fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub3", parent=h1_style,
+                                   fontSize=12, spaceAfter=8),
                 )
             )
 
@@ -359,7 +379,8 @@ class PdfReportExporter:
                 story.append(Paragraph(rec_text, body_style))
                 story.append(Spacer(1, 0.1 * inch))
 
-                for idx, rec in enumerate(report.recommendations[:5]):  # Mostrar top 5
+                # Mostrar top 5
+                for idx, rec in enumerate(report.recommendations[:5]):
                     bullet = f"<b>{idx + 1}. {rec.get('dependencia')} ({rec.get('proyecto')}):</b> {rec.get('accion_sugerida')}"
                     story.append(
                         Paragraph(
@@ -377,7 +398,8 @@ class PdfReportExporter:
             story.append(
                 Paragraph(
                     "Conclusión del Auditor",
-                    ParagraphStyle("Sub4", parent=h1_style, fontSize=12, spaceAfter=8),
+                    ParagraphStyle("Sub4", parent=h1_style,
+                                   fontSize=12, spaceAfter=8),
                 )
             )
             concl = (
@@ -390,7 +412,8 @@ class PdfReportExporter:
 
             # Compilar el PDF
             doc.build(story)
-            logger.info(f"Reporte ejecutivo PDF generado correctamente en: {target_path}")
+            logger.info(
+                f"Reporte ejecutivo PDF generado correctamente en: {target_path}")
             return target_path
 
         except Exception as e:

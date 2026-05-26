@@ -53,7 +53,8 @@ class GoDependencyReader(DependencyFileReaderInterface):
 
                 is_indirect = " // indirect" in rest or "//indirect" in rest
 
-                is_pinned = not any(c in version for c in ["+incompatible", "latest"])
+                is_pinned = not any(c in version for c in [
+                                    "+incompatible", "latest"])
 
                 dependencies.append(
                     Dependency(
@@ -61,7 +62,8 @@ class GoDependencyReader(DependencyFileReaderInterface):
                         ecosystem=Ecosystem.GO,
                         declared_version=version,
                         installed_version=version,
-                        scope=DependencyScope.PRODUCTION,  # Go no tiene clasificación de dev nativa en go.mod
+                        # Go no tiene clasificación de dev nativa en go.mod
+                        scope=DependencyScope.PRODUCTION,
                         source_file=file_path.name,
                         is_direct=not is_indirect,
                         is_pinned=is_pinned,

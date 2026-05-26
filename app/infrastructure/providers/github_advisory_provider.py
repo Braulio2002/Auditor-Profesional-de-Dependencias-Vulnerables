@@ -25,7 +25,8 @@ class GitHubAdvisoryProvider(VulnerabilityProviderInterface):
             )
             return {}
 
-        logger.info("GitHub Token configurado. Consultando GitHub Advisory Database...")
+        logger.info(
+            "GitHub Token configurado. Consultando GitHub Advisory Database...")
         # Nota: La consulta requiere llamadas GraphQL autenticadas.
         # Implementación extensible:
         # En una versión futura, aquí se realiza el request GraphQL a api.github.com/graphql

@@ -18,7 +18,8 @@ class JsonReportExporter(ReportExporterInterface):
         logger.info("Generando reporte JSON...")
 
         # Resolver ruta única para evitar sobrescribir
-        target_path = get_unique_filename(output_dir, self.settings.json_report_name)
+        target_path = get_unique_filename(
+            output_dir, self.settings.json_report_name)
 
         try:
             # Convertir las entidades a diccionarios planos estructurados

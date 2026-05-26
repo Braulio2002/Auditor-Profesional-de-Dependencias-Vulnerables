@@ -29,8 +29,10 @@ class OutdatedDependencyAnalyzerService:
             return None
 
         # Parsear ambas versiones
-        inst_major, inst_minor, inst_patch, _ = self.version_parser.parse_version_parts(installed)
-        lat_major, lat_minor, lat_patch, _ = self.version_parser.parse_version_parts(latest)
+        inst_major, inst_minor, inst_patch, _ = self.version_parser.parse_version_parts(
+            installed)
+        lat_major, lat_minor, lat_patch, _ = self.version_parser.parse_version_parts(
+            latest)
 
         # Comprobar si efectivamente la última versión es más nueva
         is_newer = (

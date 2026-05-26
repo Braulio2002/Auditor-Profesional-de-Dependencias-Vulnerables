@@ -22,7 +22,8 @@ class GradleDependencyReader(DependencyFileReaderInterface):
             with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
-            raise ReaderException(f"Error leyendo archivo Gradle {file_path}: {e}")
+            raise ReaderException(
+                f"Error leyendo archivo Gradle {file_path}: {e}")
 
         dependencies: list[Dependency] = []
 
@@ -44,14 +45,16 @@ class GradleDependencyReader(DependencyFileReaderInterface):
         for match in compact_pattern.finditer(content):
             config, group, name, version = match.groups()
             dependencies.append(
-                self._build_dependency(config, group, name, version, file_path.name)
+                self._build_dependency(
+                    config, group, name, version, file_path.name)
             )
 
         # Procesar coincidencias verbosas
         for match in verbose_pattern.finditer(content):
             config, group, name, version = match.groups()
             dependencies.append(
-                self._build_dependency(config, group, name, version, file_path.name)
+                self._build_dependency(
+                    config, group, name, version, file_path.name)
             )
 
         return dependencies
@@ -71,7 +74,8 @@ class GradleDependencyReader(DependencyFileReaderInterface):
         elif "only" in config_lower:
             scope = DependencyScope.OPTIONAL
 
-        is_pinned = not any(c in version for c in ["+", "LATEST", "RELEASE", "SNAPSHOT", "$"])
+        is_pinned = not any(c in version for c in [
+                            "+", "LATEST", "RELEASE", "SNAPSHOT", "$"])
 
         return Dependency(
             name=clean_name,

@@ -27,33 +27,11 @@ class PackageRegistryProvider(PackageRegistryProviderInterface):
         try:
             with httpx.Client(timeout=3.0) as client:
                 if ecosystem == Ecosystem.NPM:
-                    # Registro de npm
-                    url = f"https://registry.npmjs.org/{name}/latest"
-                    res = client.get(url)
-                    if res.status_code == 200:
-                        latest_ver = res.json().get("version")
-
+                    latest_ver = self._fetch_npm_latest(client, name)
                 elif ecosystem in (Ecosystem.PIP, Ecosystem.POETRY):
-                    # Registro de PyPI
-                    url = f"https://pypi.org/pypi/{name}/json"
-                    res = client.get(url)
-                    if res.status_code == 200:
-                        latest_ver = res.json().get("info", {}).get("version")
-
+                    latest_ver = self._fetch_pypi_latest(client, name)
                 elif ecosystem == Ecosystem.COMPOSER:
-                    # Registro de Packagist
-                    url = f"https://packagist.org/packages/{name}.json"
-                    res = client.get(url)
-                    if res.status_code == 200:
-                        # Packagist retorna una lista ordenada por fecha de releases
-                        versions_data = res.json().get("package", {}).get("versions", {})
-                        # Obtener la primera versión que no sea de desarrollo (no contenga -dev, alpha, beta)
-                        for ver_str in versions_data.keys():
-                            if not any(
-                                x in ver_str.lower() for x in ["dev", "alpha", "beta", "rc"]
-                            ):
-                                latest_ver = ver_str.lstrip("v")
-                                break
+                    latest_ver = self._fetch_packagist_latest(client, name)
         except Exception as e:
             logger.warning(
                 f"No se pudo consultar el registro de paquetes para {name} ({ecosystem.value}): {e}"
@@ -63,3 +41,35 @@ class PackageRegistryProvider(PackageRegistryProviderInterface):
             self.cache[cache_key] = latest_ver
 
         return latest_ver
+
+    def _fetch_npm_latest(self, client: httpx.Client, name: str) -> str | None:
+        """Consulta el registro público de NPM para obtener la última versión."""
+        url = f"https://registry.npmjs.org/{name}/latest"
+        res = client.get(url)
+        if res.status_code == 200:
+            return res.json().get("version")
+        return None
+
+    def _fetch_pypi_latest(self, client: httpx.Client, name: str) -> str | None:
+        """Consulta el registro público de PyPI para obtener la última versión."""
+        url = f"https://pypi.org/pypi/{name}/json"
+        res = client.get(url)
+        if res.status_code == 200:
+            return res.json().get("info", {}).get("version")
+        return None
+
+    def _fetch_packagist_latest(self, client: httpx.Client, name: str) -> str | None:
+        """Consulta el registro público de Packagist para obtener la última versión estable."""
+        url = f"https://packagist.org/packages/{name}.json"
+        res = client.get(url)
+        if res.status_code != 200:
+            return None
+
+        versions_data = res.json().get("package", {}).get("versions", {})
+        # Obtener la primera versión que no sea de desarrollo (no contenga -dev, alpha, beta)
+        for ver_str in versions_data.keys():
+            if not any(
+                x in ver_str.lower() for x in ["dev", "alpha", "beta", "rc"]
+            ):
+                return ver_str.lstrip("v")
+        return None
